@@ -131,6 +131,7 @@ export const createPurchase = tryCatchFn(
         quantity: sub.quantity,
         cost: sub.cost,
         image: sub.image,
+        supplier:body.supplier._id
       });
 
       if (subData) {
@@ -167,33 +168,54 @@ export const fetchPurchase = tryCatchFn(async (req: Request, res: Response) => {
 
   if (purchase) {
     console.log(purchase);
-    res.status(200).json({
+  return  res.status(200).json({
       success: true,
       result: purchase,
     });
   }
 
-  res.status(500).json({
+ return res.status(500).json({
     success: false,
     message: "Failed to fetch purchase",
   });
 });
 
+export const deletePurchase = tryCatchFn(
+  async (req: Request, res: Response) => {
+    let id = req.params.id;
+    let purchase = await PurchaseModel.findByIdAndDelete(id);
+    if (purchase) {
+      console.log(purchase);
+      res.status(200).json({
+        success: true,
+        result: purchase,
+      });
+    }
 
-
-export const deletePurchase = tryCatchFn(async (req: Request, res: Response) => {
- let id = req.params.id
-  let purchase = await PurchaseModel.findByIdAndDelete(id);
-  if (purchase) {
-    console.log(purchase);
-    res.status(200).json({
-      success: true,
-      result: purchase,
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch purchase",
     });
   }
+);
 
-  res.status(500).json({
-    success: false,
-    message: "Failed to fetch purchase",
-  });
-});
+export const fetchSubProductPurchase = tryCatchFn(
+  async (req: Request, res: Response) => {
+    let id = req.params.id;
+    let purchase = await PurchaseSubProductModel.find({
+      subproduct: id,
+    }).populate('supplier');
+    if (purchase) {
+      console.log(purchase);
+      return res.status(200).json({
+        success: true,
+        result: purchase,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch purchase",
+    });
+  }
+);

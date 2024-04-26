@@ -1,5 +1,6 @@
 import { getModelForClass, prop, Ref } from "@typegoose/typegoose";
 import { SubProduct } from "./subproduct.model";
+import { Supplier } from "../../supplierModule/supplier.model";
 
 
 export class PurchaseSubProduct {
@@ -9,12 +10,15 @@ export class PurchaseSubProduct {
     @prop({ required: true })
     cost: number;
   
-    @prop({ required: true })
+    @prop({})
     image: string;
   
 
     @prop({ ref: ()=>SubProduct })
     subproduct: Ref<SubProduct>;
+
+    @prop({ ref: ()=>Supplier })
+    supplier: Ref<Supplier>;
   
     @prop({ required: true })
     name: string;
