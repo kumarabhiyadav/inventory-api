@@ -16,7 +16,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePurchase = exports.fetchPurchase = exports.createPurchase = exports.searchSubProducts = exports.fetchSubProducts = exports.fetchProducts = exports.fetchCategories = exports.createSubproduct = exports.createProduct = exports.createCategory = void 0;
+exports.fetchSubProductPurchase = exports.deletePurchase = exports.fetchPurchase = exports.createPurchase = exports.searchSubProducts = exports.fetchSubProducts = exports.fetchProducts = exports.fetchCategories = exports.createSubproduct = exports.createProduct = exports.createCategory = void 0;
 const tryCatchFn_1 = require("../utils/Helpers/tryCatchFn");
 const category_model_1 = require("./models/category.model");
 const product_model_1 = require("./models/product.model");
@@ -124,7 +124,10 @@ exports.createPurchase = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(vo
                     subproduct: sub.subproduct,
                     quantity: sub.quantity,
                     cost: sub.cost,
+                    purchasePercent: sub.purchasePercent,
+                    salesPercent: sub.salesPercent,
                     image: sub.image,
+                    supplier: body.supplier._id,
                 });
                 if (subData) {
                     subproducts.push(subData._id);
@@ -165,13 +168,12 @@ exports.fetchPurchase = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(voi
         .populate("supplier")
         .populate("subProducts");
     if (purchase) {
-        console.log(purchase);
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             result: purchase,
         });
     }
-    res.status(500).json({
+    return res.status(500).json({
         success: false,
         message: "Failed to fetch purchase",
     });
@@ -180,13 +182,29 @@ exports.deletePurchase = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(vo
     let id = req.params.id;
     let purchase = yield purchase_model_1.PurchaseModel.findByIdAndDelete(id);
     if (purchase) {
-        console.log(purchase);
-        res.status(200).json({
+        let subproduct = yield purchase_subproduct_model_1.PurchaseSubProductModel.deleteMany({ _id: { $in: purchase.subProducts } });
+        return res.status(200).json({
             success: true,
             result: purchase,
         });
     }
-    res.status(500).json({
+    return res.status(500).json({
+        success: false,
+        message: "Failed to fetch purchase",
+    });
+}));
+exports.fetchSubProductPurchase = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let id = req.params.id;
+    let purchase = yield purchase_subproduct_model_1.PurchaseSubProductModel.find({
+        subproduct: id,
+    }).populate("supplier");
+    if (purchase) {
+        return res.status(200).json({
+            success: true,
+            result: purchase,
+        });
+    }
+    return res.status(500).json({
         success: false,
         message: "Failed to fetch purchase",
     });

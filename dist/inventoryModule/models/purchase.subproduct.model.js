@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PurchaseSubProductModel = exports.PurchaseSubProduct = void 0;
 const typegoose_1 = require("@typegoose/typegoose");
 const subproduct_model_1 = require("./subproduct.model");
+const supplier_model_1 = require("../../supplierModule/supplier.model");
 class PurchaseSubProduct {
 }
 __decorate([
@@ -23,13 +24,25 @@ __decorate([
     __metadata("design:type", Number)
 ], PurchaseSubProduct.prototype, "cost", void 0);
 __decorate([
-    (0, typegoose_1.prop)({ required: true }),
+    (0, typegoose_1.prop)({}),
     __metadata("design:type", String)
 ], PurchaseSubProduct.prototype, "image", void 0);
 __decorate([
     (0, typegoose_1.prop)({ ref: () => subproduct_model_1.SubProduct }),
     __metadata("design:type", Object)
 ], PurchaseSubProduct.prototype, "subproduct", void 0);
+__decorate([
+    (0, typegoose_1.prop)({ ref: () => supplier_model_1.Supplier }),
+    __metadata("design:type", Object)
+], PurchaseSubProduct.prototype, "supplier", void 0);
+__decorate([
+    (0, typegoose_1.prop)({ required: true, default: 0 }),
+    __metadata("design:type", Number)
+], PurchaseSubProduct.prototype, "purchasePercent", void 0);
+__decorate([
+    (0, typegoose_1.prop)({ required: true, default: 0 }),
+    __metadata("design:type", Number)
+], PurchaseSubProduct.prototype, "salesPercent", void 0);
 __decorate([
     (0, typegoose_1.prop)({ required: true }),
     __metadata("design:type", String)

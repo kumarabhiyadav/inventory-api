@@ -130,8 +130,10 @@ export const createPurchase = tryCatchFn(
         subproduct: sub.subproduct,
         quantity: sub.quantity,
         cost: sub.cost,
+        purchasePercent: sub.purchasePercent,
+        salesPercent: sub.salesPercent,
         image: sub.image,
-        supplier:body.supplier._id
+        supplier: body.supplier._id,
       });
 
       if (subData) {
@@ -167,14 +169,13 @@ export const fetchPurchase = tryCatchFn(async (req: Request, res: Response) => {
     .populate("subProducts");
 
   if (purchase) {
-    console.log(purchase);
-  return  res.status(200).json({
+    return res.status(200).json({
       success: true,
       result: purchase,
     });
   }
 
- return res.status(500).json({
+  return res.status(500).json({
     success: false,
     message: "Failed to fetch purchase",
   });
@@ -183,16 +184,17 @@ export const fetchPurchase = tryCatchFn(async (req: Request, res: Response) => {
 export const deletePurchase = tryCatchFn(
   async (req: Request, res: Response) => {
     let id = req.params.id;
+
     let purchase = await PurchaseModel.findByIdAndDelete(id);
     if (purchase) {
-      console.log(purchase);
-      res.status(200).json({
+      let subproduct = await PurchaseSubProductModel.deleteMany({ _id: { $in: purchase.subProducts } })
+      return res.status(200).json({
         success: true,
         result: purchase,
       });
     }
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch purchase",
     });
@@ -204,9 +206,8 @@ export const fetchSubProductPurchase = tryCatchFn(
     let id = req.params.id;
     let purchase = await PurchaseSubProductModel.find({
       subproduct: id,
-    }).populate('supplier');
+    }).populate("supplier");
     if (purchase) {
-      console.log(purchase);
       return res.status(200).json({
         success: true,
         result: purchase,
