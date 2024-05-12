@@ -16,7 +16,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchSubProductPurchase = exports.deletePurchase = exports.fetchPurchase = exports.createPurchase = exports.searchSubProducts = exports.fetchSubProducts = exports.fetchProducts = exports.fetchCategories = exports.createSubproduct = exports.createProduct = exports.createCategory = void 0;
+exports.deleteSubproduct = exports.deleteProduct = exports.deleteCategory = exports.fetchSubProductPurchase = exports.deletePurchase = exports.fetchPurchase = exports.createPurchase = exports.searchSubProducts = exports.fetchSubProducts = exports.fetchProducts = exports.fetchCategories = exports.createSubproduct = exports.createProduct = exports.createCategory = void 0;
 const tryCatchFn_1 = require("../utils/Helpers/tryCatchFn");
 const category_model_1 = require("./models/category.model");
 const product_model_1 = require("./models/product.model");
@@ -182,7 +182,9 @@ exports.deletePurchase = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(vo
     let id = req.params.id;
     let purchase = yield purchase_model_1.PurchaseModel.findByIdAndDelete(id);
     if (purchase) {
-        let subproduct = yield purchase_subproduct_model_1.PurchaseSubProductModel.deleteMany({ _id: { $in: purchase.subProducts } });
+        let subproduct = yield purchase_subproduct_model_1.PurchaseSubProductModel.deleteMany({
+            _id: { $in: purchase.subProducts },
+        });
         return res.status(200).json({
             success: true,
             result: purchase,
@@ -207,5 +209,52 @@ exports.fetchSubProductPurchase = (0, tryCatchFn_1.tryCatchFn)((req, res) => __a
     return res.status(500).json({
         success: false,
         message: "Failed to fetch purchase",
+    });
+}));
+exports.deleteCategory = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let id = req.params.id;
+    let product = yield product_model_1.ProductModel.find({
+        category: id,
+    });
+    if (product) {
+        return res.status(200).json({
+            success: false,
+            result: product,
+            message: "Failed to delete category beacuse products in category",
+        });
+    }
+    let category = yield category_model_1.CategoryModel.findByIdAndDelete(id);
+    return res.status(200).json({
+        success: true,
+        result: category,
+        message: "Category Deleted successfully",
+    });
+}));
+exports.deleteProduct = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let id = req.params.id;
+    let subproduct = yield subproduct_model_1.SubProductModel.find({
+        product: id,
+    });
+    if (subproduct) {
+        return res.status(200).json({
+            success: false,
+            result: subproduct,
+            message: "Failed to delete product beacuse subproduct in product",
+        });
+    }
+    let category = yield category_model_1.CategoryModel.findByIdAndDelete(id);
+    return res.status(200).json({
+        success: true,
+        result: category,
+        message: "Product Deleted successfully",
+    });
+}));
+exports.deleteSubproduct = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let id = req.params.id;
+    let subproduct = yield subproduct_model_1.SubProductModel.findByIdAndDelete(id);
+    return res.status(200).json({
+        success: true,
+        result: subproduct,
+        message: "Subproduct delete successfully",
     });
 }));

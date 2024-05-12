@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { createCategory,createProduct,createPurchase,createSubproduct, deletePurchase, fetchCategories, fetchProducts, fetchPurchase, fetchSubProductPurchase, fetchSubProducts,searchSubProducts } from "./inventory.controller";
+import { createCategory,createProduct,createPurchase,createSubproduct, deleteCategory, deleteProduct, deletePurchase, deleteSubproduct, fetchCategories, fetchProducts, fetchPurchase, fetchSubProductPurchase, fetchSubProducts,searchSubProducts } from "./inventory.controller";
 export const InventoryRoutes: Router = express.Router();
 
 InventoryRoutes.post("/createCategory", createCategory);
@@ -13,6 +13,10 @@ InventoryRoutes.get("/searchSubProducts", searchSubProducts);
 
 InventoryRoutes.post("/createPurchase", createPurchase);
 InventoryRoutes.get("/fetchPurchase", fetchPurchase);
+
+InventoryRoutes.get("/deleteCategory", deleteCategory);
+InventoryRoutes.get("/deleteProduct", deleteProduct);
+InventoryRoutes.get("/deleteSubproduct", deleteSubproduct);
 
 InventoryRoutes.delete("/deletePurchase/:id", deletePurchase);
 InventoryRoutes.get("/fetchSubProductPurchase/:id", fetchSubProductPurchase);

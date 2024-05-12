@@ -187,7 +187,9 @@ export const deletePurchase = tryCatchFn(
 
     let purchase = await PurchaseModel.findByIdAndDelete(id);
     if (purchase) {
-      let subproduct = await PurchaseSubProductModel.deleteMany({ _id: { $in: purchase.subProducts } })
+      let subproduct = await PurchaseSubProductModel.deleteMany({
+        _id: { $in: purchase.subProducts },
+      });
       return res.status(200).json({
         success: true,
         result: purchase,
@@ -217,6 +219,68 @@ export const fetchSubProductPurchase = tryCatchFn(
     return res.status(500).json({
       success: false,
       message: "Failed to fetch purchase",
+    });
+  }
+);
+
+export const deleteCategory = tryCatchFn(
+  async (req: Request, res: Response) => {
+    let id = req.params.id;
+    let product = await ProductModel.find({
+      category: id,
+    });
+    if (product) {
+      return res.status(200).json({
+        success: false,
+        result: product,
+        message: "Failed to delete category beacuse products in category",
+      });
+    }
+    let category = await CategoryModel.findByIdAndDelete(id);
+    return res.status(200).json({
+      success: true,
+      result: category,
+      message: "Category Deleted successfully",
+    });
+  }
+);
+
+
+
+export const deleteProduct = tryCatchFn(
+  async (req: Request, res: Response) => {
+    let id = req.params.id;
+    let subproduct = await SubProductModel.find({
+      product: id,
+    });
+    if (subproduct) {
+      return res.status(200).json({
+        success: false,
+        result: subproduct,
+        message: "Failed to delete product beacuse subproduct in product",
+      });
+    }
+    let category = await CategoryModel.findByIdAndDelete(id);
+    return res.status(200).json({
+      success: true,
+      result: category,
+      message: "Product Deleted successfully",
+    });
+  }
+);
+
+
+export const deleteSubproduct = tryCatchFn(
+  async (req: Request, res: Response) => {
+    let id = req.params.id;
+    let subproduct = await SubProductModel.findByIdAndDelete(
+       id,
+    );
+   
+    return res.status(200).json({
+      success: true,
+      result: subproduct,
+      message: "Subproduct delete successfully",
     });
   }
 );

@@ -16,5 +16,8 @@ exports.InventoryRoutes.get("/fetchSubProducts/product/:product", inventory_cont
 exports.InventoryRoutes.get("/searchSubProducts", inventory_controller_1.searchSubProducts);
 exports.InventoryRoutes.post("/createPurchase", inventory_controller_1.createPurchase);
 exports.InventoryRoutes.get("/fetchPurchase", inventory_controller_1.fetchPurchase);
+exports.InventoryRoutes.get("/deleteCategory", inventory_controller_1.deleteCategory);
+exports.InventoryRoutes.get("/deleteProduct", inventory_controller_1.deleteProduct);
+exports.InventoryRoutes.get("/deleteSubproduct", inventory_controller_1.deleteSubproduct);
 exports.InventoryRoutes.delete("/deletePurchase/:id", inventory_controller_1.deletePurchase);
 exports.InventoryRoutes.get("/fetchSubProductPurchase/:id", inventory_controller_1.fetchSubProductPurchase);
