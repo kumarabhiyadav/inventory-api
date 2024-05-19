@@ -38,11 +38,11 @@ __decorate([
 __decorate([
     (0, typegoose_1.prop)({ required: true, default: 0 }),
     __metadata("design:type", Number)
-], PurchaseSubProduct.prototype, "purchasePercent", void 0);
+], PurchaseSubProduct.prototype, "mrp", void 0);
 __decorate([
     (0, typegoose_1.prop)({ required: true, default: 0 }),
     __metadata("design:type", Number)
-], PurchaseSubProduct.prototype, "salesPercent", void 0);
+], PurchaseSubProduct.prototype, "sellingprice", void 0);
 __decorate([
     (0, typegoose_1.prop)({ required: true }),
     __metadata("design:type", String)

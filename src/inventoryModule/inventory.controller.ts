@@ -166,7 +166,9 @@ export const createPurchase = tryCatchFn(
 export const fetchPurchase = tryCatchFn(async (req: Request, res: Response) => {
   let purchase = await PurchaseModel.find()
     .populate("supplier")
-    .populate("subProducts");
+    .populate("subProducts").sort({
+      createdAt:-1
+    });
 
   if (purchase) {
     return res.status(200).json({

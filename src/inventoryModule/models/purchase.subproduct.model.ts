@@ -19,10 +19,10 @@ export class PurchaseSubProduct {
   supplier: Ref<Supplier>;
 
   @prop({ required: true, default: 0 })
-  purchasePercent: number;
+  mrp: number;
 
   @prop({ required: true, default: 0 })
-  salesPercent: number;
+  sellingprice: number;
 
   @prop({ required: true })
   name: string;

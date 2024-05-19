@@ -166,7 +166,9 @@ exports.createPurchase = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(vo
 exports.fetchPurchase = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let purchase = yield purchase_model_1.PurchaseModel.find()
         .populate("supplier")
-        .populate("subProducts");
+        .populate("subProducts").sort({
+        createdAt: -1
+    });
     if (purchase) {
         return res.status(200).json({
             success: true,
