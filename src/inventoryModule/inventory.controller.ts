@@ -130,8 +130,8 @@ export const createPurchase = tryCatchFn(
         subproduct: sub.subproduct,
         quantity: sub.quantity,
         cost: sub.cost,
-        purchasePercent: sub.purchasePercent,
-        salesPercent: sub.salesPercent,
+        mrp: sub.mrp,
+        sellingprice: sub.sellingprice,
         image: sub.image,
         supplier: body.supplier._id,
       });
