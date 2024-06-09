@@ -22,7 +22,7 @@ __decorate([
     __metadata("design:type", String)
 ], Supplier.prototype, "address", void 0);
 __decorate([
-    (0, typegoose_1.prop)({}),
+    (0, typegoose_1.prop)({ default: "" }),
     __metadata("design:type", String)
 ], Supplier.prototype, "mobile", void 0);
 __decorate([

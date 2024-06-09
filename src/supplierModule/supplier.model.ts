@@ -7,7 +7,7 @@ export class Supplier {
   @prop({})
   address: string;
 
-  @prop({})
+  @prop({default:""})
   mobile: string;
 
   @prop({ default: true })
