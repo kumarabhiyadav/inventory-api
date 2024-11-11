@@ -16,7 +16,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteSubproduct = exports.deleteProduct = exports.deleteCategory = exports.fetchSubProductPurchase = exports.deletePurchase = exports.fetchPurchase = exports.createPurchase = exports.searchSubProducts = exports.fetchSubProducts = exports.fetchProducts = exports.fetchCategories = exports.createSubproduct = exports.createProduct = exports.createCategory = void 0;
+exports.createQRCode = exports.sellProductQR = exports.deleteSubproduct = exports.deleteProduct = exports.deleteCategory = exports.fetchSubProductPurchase = exports.deletePurchase = exports.fetchPurchase = exports.createPurchase = exports.searchSubProducts = exports.fetchSubProducts = exports.fetchProducts = exports.fetchCategories = exports.createSubproduct = exports.createProduct = exports.createCategory = void 0;
 const tryCatchFn_1 = require("../utils/Helpers/tryCatchFn");
 const category_model_1 = require("./models/category.model");
 const product_model_1 = require("./models/product.model");
@@ -24,6 +24,9 @@ const subproduct_model_1 = require("./models/subproduct.model");
 const fileUpload_1 = require("../utils/Helpers/fileUpload");
 const purchase_subproduct_model_1 = require("./models/purchase.subproduct.model");
 const purchase_model_1 = require("./models/purchase.model");
+const inventory_model_1 = require("./models/inventory.model");
+const supplier_model_1 = require("../supplierModule/supplier.model");
+const ENC_1 = require("../utils/Helpers/ENC");
 exports.createCategory = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let { name } = req.body;
     let category = yield category_model_1.CategoryModel.create({ name });
@@ -166,8 +169,9 @@ exports.createPurchase = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(vo
 exports.fetchPurchase = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let purchase = yield purchase_model_1.PurchaseModel.find()
         .populate("supplier")
-        .populate("subProducts").sort({
-        createdAt: -1
+        .populate("subProducts")
+        .sort({
+        createdAt: -1,
     });
     if (purchase) {
         return res.status(200).json({
@@ -260,3 +264,56 @@ exports.deleteSubproduct = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(
         message: "Subproduct delete successfully",
     });
 }));
+exports.sellProductQR = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let id = req.params.id;
+    let subproduct = yield subproduct_model_1.SubProductModel.findByIdAndDelete(id);
+    return res.status(200).json({
+        success: true,
+        result: subproduct,
+        message: "Subproduct delete successfully",
+    });
+}));
+exports.createQRCode = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let { id, supplierId } = req.body;
+    let subproduct = yield purchase_subproduct_model_1.PurchaseSubProductModel.findById(id);
+    let supplier = yield supplier_model_1.SupplierModel.findById(supplierId);
+    if (subproduct && supplier) {
+        let sku = getSKU(supplier.name, subproduct.cost);
+        let inventory = yield inventory_model_1.InventoryModel.create({
+            subProduct: subproduct._id,
+            sku,
+            quantityChanged: 0,
+            newQuantity: subproduct.quantity,
+            transactionType: "PURCHASE",
+        });
+        return res.status(200).json({
+            success: true,
+            result: inventory,
+            message: "Moved TO INVENTORY",
+            enc: (0, ENC_1.encryptText)(inventory._id.toString()),
+        });
+    }
+    else {
+        return res.status(500).json({
+            success: false,
+            message: "Error to move inventory",
+        });
+    }
+}));
+function getSKU(supplierName, price) {
+    return supplierName.slice(0, 2) + "AD" + numberToStringFormat(price);
+}
+function numberToStringFormat(num) {
+    const numStr = num.toString();
+    let result = "";
+    for (let i = 0; i < numStr.length; i++) {
+        const digit = parseInt(numStr[i]);
+        if (digit >= 1 && digit <= 26) {
+            result += String.fromCharCode(65 + digit - 1);
+        }
+        else {
+            result += numStr[i];
+        }
+    }
+    return result;
+}

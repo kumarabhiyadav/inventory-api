@@ -21,3 +21,4 @@ exports.InventoryRoutes.get("/deleteProduct", inventory_controller_1.deleteProdu
 exports.InventoryRoutes.get("/deleteSubproduct", inventory_controller_1.deleteSubproduct);
 exports.InventoryRoutes.delete("/deletePurchase/:id", inventory_controller_1.deletePurchase);
 exports.InventoryRoutes.get("/fetchSubProductPurchase/:id", inventory_controller_1.fetchSubProductPurchase);
+exports.InventoryRoutes.post("/createQRCode", inventory_controller_1.createQRCode);
