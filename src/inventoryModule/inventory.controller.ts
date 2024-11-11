@@ -315,12 +315,19 @@ export const createQRCode = tryCatchFn(async (req: Request, res: Response) => {
       newQuantity: subproduct.quantity,
       transactionType: "PURCHASE",
     });
+  
 
+    let result =  {
+     ...inventory.toObject(),
+     pcost:subproduct.sellingprice,
+     sp :subproduct.mrp
+    }
+    
     return res.status(200).json({
       success: true,
-      result: inventory,
+      result: result,
       message: "Moved TO INVENTORY",
-      enc: encryptText(inventory._id.toString()),
+      qr: encryptText(inventory._id.toString()),
     });
   }else{
     return res.status(500).json({

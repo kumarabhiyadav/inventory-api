@@ -286,11 +286,12 @@ exports.createQRCode = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void
             newQuantity: subproduct.quantity,
             transactionType: "PURCHASE",
         });
+        let result = Object.assign(Object.assign({}, inventory.toObject()), { pcost: subproduct.sellingprice, sp: subproduct.mrp });
         return res.status(200).json({
             success: true,
-            result: inventory,
+            result: result,
             message: "Moved TO INVENTORY",
-            enc: (0, ENC_1.encryptText)(inventory._id.toString()),
+            qr: (0, ENC_1.encryptText)(inventory._id.toString()),
         });
     }
     else {
