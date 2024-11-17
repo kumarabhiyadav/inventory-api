@@ -357,6 +357,21 @@ export const createQRCode = tryCatchFn(async (req: Request, res: Response) => {
   let subproduct = await PurchaseSubProductModel.findById(id);
 
   let supplier = await SupplierModel.findById(supplierId);
+  // Check Inventory Already Exists Or Not
+
+  let inventoryCheck  =  await InventoryModel.findOne({
+subProduct : subproduct?._id
+  })
+
+  if (inventoryCheck){
+
+    return res.status(500).json({
+      success: false,
+      message: "Already Exists in Inventory",
+    });
+
+  }
+
 
   if (subproduct && supplier) {
     let sku = getSKU(supplier.name, subproduct.cost);

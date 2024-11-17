@@ -322,6 +322,15 @@ exports.createQRCode = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void
     let { id, supplierId } = req.body;
     let subproduct = yield purchase_subproduct_model_1.PurchaseSubProductModel.findById(id);
     let supplier = yield supplier_model_1.SupplierModel.findById(supplierId);
+    let inventoryCheck = yield inventory_model_1.InventoryModel.findOne({
+        subProduct: subproduct === null || subproduct === void 0 ? void 0 : subproduct._id
+    });
+    if (inventoryCheck) {
+        return res.status(500).json({
+            success: false,
+            message: "Already Exists in Inventory",
+        });
+    }
     if (subproduct && supplier) {
         let sku = getSKU(supplier.name, subproduct.cost);
         let inventory = yield inventory_model_1.InventoryModel.create({
