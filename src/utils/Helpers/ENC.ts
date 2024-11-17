@@ -1,4 +1,7 @@
 import crypto from 'crypto';
+import  dotenv  from 'dotenv';
+
+dotenv.config();
 
 export function encryptText(plainText:string, password=process.env.QRENC||'') {
   // Generate a random 16-byte initialization vector (IV)

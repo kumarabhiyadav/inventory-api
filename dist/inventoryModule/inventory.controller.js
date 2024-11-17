@@ -27,6 +27,7 @@ const purchase_model_1 = require("./models/purchase.model");
 const inventory_model_1 = require("./models/inventory.model");
 const supplier_model_1 = require("../supplierModule/supplier.model");
 const ENC_1 = require("../utils/Helpers/ENC");
+const inventorylog_model_1 = require("./models/inventorylog.model");
 exports.createCategory = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let { name } = req.body;
     let category = yield category_model_1.CategoryModel.create({ name });
@@ -265,12 +266,56 @@ exports.deleteSubproduct = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(
     });
 }));
 exports.sellProductQR = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let id = req.params.id;
-    let subproduct = yield subproduct_model_1.SubProductModel.findByIdAndDelete(id);
+    var _g, _h;
+    let code = req.params.code;
+    let pass = req.params.pass;
+    let qyt = req.params.qyt;
+    let cost = req.params.cost;
+    let note = req.params.note;
+    if (!code && !pass && !qyt && !cost) {
+        return res.status(200).json({
+            success: false,
+            message: "Invalide code",
+        });
+    }
+    let data = (0, ENC_1.decryptText)({ cipherText: code, iv: pass });
+    console.log(data);
+    let inventory = yield inventory_model_1.InventoryModel.findById(data);
+    if (!inventory) {
+        return res.status(200).json({
+            success: false,
+            message: "Product Not Found",
+        });
+    }
+    const result = yield inventorylog_model_1.InventoryLogModel.aggregate([
+        {
+            $match: {
+                inventory: inventory._id
+            }
+        }, {
+            $group: {
+                _id: null,
+                totalQyt: { $sum: "$qyt" }
+            }
+        }
+    ]);
+    if ((!(inventory.newQuantity >= ((_h = (_g = result[0]) === null || _g === void 0 ? void 0 : _g.totalQyt) !== null && _h !== void 0 ? _h : 0) + parseInt(qyt)))) {
+        return res.status(200).json({
+            success: false,
+            message: `${inventory.newQuantity - result[0]['totalQyt']} In Stock`,
+        });
+    }
+    let total = parseInt(qyt) * parseFloat(cost);
+    let inventoryLog = yield inventorylog_model_1.InventoryLogModel.create({
+        inventory: inventory._id,
+        cost: total,
+        qyt,
+        note
+    });
     return res.status(200).json({
         success: true,
-        result: subproduct,
-        message: "Subproduct delete successfully",
+        result: inventoryLog,
+        message: "Logged Inventory OUT",
     });
 }));
 exports.createQRCode = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -287,11 +332,12 @@ exports.createQRCode = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void
             transactionType: "PURCHASE",
         });
         let result = Object.assign(Object.assign({}, inventory.toObject()), { pcost: subproduct.sellingprice, sp: subproduct.mrp });
+        let enc = (0, ENC_1.encryptText)(inventory._id.toString());
         return res.status(200).json({
             success: true,
             result: result,
             message: "Moved TO INVENTORY",
-            qr: (0, ENC_1.encryptText)(inventory._id.toString()),
+            qr: `${enc["cipherText"]}:${enc["iv"]}`,
         });
     }
     else {

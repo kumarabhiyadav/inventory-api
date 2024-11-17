@@ -5,6 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decryptText = exports.encryptText = void 0;
 const crypto_1 = __importDefault(require("crypto"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 function encryptText(plainText, password = process.env.QRENC || '') {
     const iv = crypto_1.default.randomBytes(16);
     const key = crypto_1.default.pbkdf2Sync(password, 'salt', 100000, 32, 'sha256');

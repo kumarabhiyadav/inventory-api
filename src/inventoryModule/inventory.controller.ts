@@ -14,6 +14,7 @@ import { InventoryModel } from "./models/inventory.model";
 import { SupplierModel } from "../supplierModule/supplier.model";
 import { log } from "console";
 import { decryptText, encryptText } from "../utils/Helpers/ENC";
+import { InventoryLogModel } from "./models/inventorylog.model";
 
 export const createCategory = tryCatchFn(
   async (req: Request, res: Response) => {
@@ -288,19 +289,70 @@ export const deleteSubproduct = tryCatchFn(
 // New
 
 export const sellProductQR = tryCatchFn(async (req: Request, res: Response) => {
-  let id = req.params.id;
-  let subproduct = await SubProductModel.findByIdAndDelete(id);
+  let code = req.params.code;
+  let pass = req.params.pass;
+  let qyt = req.params.qyt;
+  let cost = req.params.cost;
+  let note = req.params.note;
+
+
+  if (!code && !pass && !qyt && !cost) {
+    return res.status(200).json({
+      success: false,
+      message: "Invalide code",
+    });
+  }
+
+  let data = decryptText({ cipherText: code, iv: pass });
+  console.log(data);
+  let inventory = await InventoryModel.findById(data);
+
+  if (!inventory) {
+    return res.status(200).json({
+      success: false,
+      message: "Product Not Found",
+    });
+  } 
+
+  const result = await InventoryLogModel.aggregate([
+    {
+      $match: {
+        inventory: inventory._id // Filter based on the value of `inventory`
+      }
+    },{
+      $group : {
+        _id : null,
+        totalQyt: {$sum:"$qyt"}
+      }
+    }
+  ]);
+
+
+  if  ((!(inventory.newQuantity >= (result[0]?.totalQyt ?? 0) + parseInt(qyt))) ){
+    return res.status(200).json({
+      success: false,
+      message: `${inventory.newQuantity - result[0]['totalQyt']} In Stock`,
+    });
+  }
+
+   
+  let total = parseInt(qyt)*parseFloat(cost);
+  let inventoryLog = await InventoryLogModel.create({
+    inventory:inventory._id,
+    cost:total,
+    qyt,
+    note
+  })
 
   return res.status(200).json({
     success: true,
-    result: subproduct,
-    message: "Subproduct delete successfully",
+    result: inventoryLog,
+    message: "Logged Inventory OUT",
   });
 });
 
 export const createQRCode = tryCatchFn(async (req: Request, res: Response) => {
   let { id, supplierId } = req.body;
-
 
   let subproduct = await PurchaseSubProductModel.findById(id);
 
@@ -315,21 +367,22 @@ export const createQRCode = tryCatchFn(async (req: Request, res: Response) => {
       newQuantity: subproduct.quantity,
       transactionType: "PURCHASE",
     });
-  
 
-    let result =  {
-     ...inventory.toObject(),
-     pcost:subproduct.sellingprice,
-     sp :subproduct.mrp
-    }
-    
+    let result = {
+      ...inventory.toObject(),
+      pcost: subproduct.sellingprice,
+      sp: subproduct.mrp,
+    };
+
+    let enc = encryptText(inventory._id.toString());
+
     return res.status(200).json({
       success: true,
       result: result,
       message: "Moved TO INVENTORY",
-      qr: encryptText(inventory._id.toString()),
+      qr: `${enc["cipherText"]}:${enc["iv"]}`,
     });
-  }else{
+  } else {
     return res.status(500).json({
       success: false,
       message: "Error to move inventory",
@@ -338,7 +391,7 @@ export const createQRCode = tryCatchFn(async (req: Request, res: Response) => {
 });
 
 function getSKU(supplierName: string, price: number) {
-  return supplierName.slice(0, 2) +"AD"+ numberToStringFormat(price);
+  return supplierName.slice(0, 2) + "AD" + numberToStringFormat(price);
 }
 
 function numberToStringFormat(num: number) {
@@ -356,7 +409,7 @@ function numberToStringFormat(num: number) {
     if (digit >= 1 && digit <= 26) {
       result += String.fromCharCode(65 + digit - 1); // 'A' is at char code 65
     } else {
-      result += numStr[i]; // Keep non-mapped digits as they are
+      result += numStr[i];
     }
   }
 
