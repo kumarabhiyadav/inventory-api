@@ -52,6 +52,10 @@ __decorate([
     __metadata("design:type", String)
 ], PurchaseSubProduct.prototype, "unit", void 0);
 __decorate([
+    (0, typegoose_1.prop)({ default: false }),
+    __metadata("design:type", Boolean)
+], PurchaseSubProduct.prototype, "inInventory", void 0);
+__decorate([
     (0, typegoose_1.prop)({ required: true }),
     __metadata("design:type", Number)
 ], PurchaseSubProduct.prototype, "quantity", void 0);

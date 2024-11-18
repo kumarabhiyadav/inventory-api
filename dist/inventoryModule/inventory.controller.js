@@ -326,7 +326,7 @@ exports.createQRCode = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void
         subProduct: subproduct === null || subproduct === void 0 ? void 0 : subproduct._id
     });
     if (inventoryCheck) {
-        return res.status(500).json({
+        return res.status(200).json({
             success: false,
             message: "Already Exists in Inventory",
         });
@@ -342,6 +342,7 @@ exports.createQRCode = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void
         });
         let result = Object.assign(Object.assign({}, inventory.toObject()), { pcost: subproduct.sellingprice, sp: subproduct.mrp });
         let enc = (0, ENC_1.encryptText)(inventory._id.toString());
+        let sub = yield purchase_subproduct_model_1.PurchaseSubProductModel.findByIdAndUpdate(subproduct._id, { inInventory: true });
         return res.status(200).json({
             success: true,
             result: result,

@@ -365,7 +365,7 @@ subProduct : subproduct?._id
 
   if (inventoryCheck){
 
-    return res.status(500).json({
+    return res.status(200).json({
       success: false,
       message: "Already Exists in Inventory",
     });
@@ -390,6 +390,8 @@ subProduct : subproduct?._id
     };
 
     let enc = encryptText(inventory._id.toString());
+
+    let sub = await  PurchaseSubProductModel.findByIdAndUpdate(subproduct._id,{inInventory:true});
 
     return res.status(200).json({
       success: true,

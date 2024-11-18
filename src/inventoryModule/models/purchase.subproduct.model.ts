@@ -30,6 +30,9 @@ export class PurchaseSubProduct {
   @prop({ required: true })
   unit: string;
 
+  @prop({ default: false })
+  inInventory: boolean;
+
   @prop({ required: true })
   quantity: number;
 }
