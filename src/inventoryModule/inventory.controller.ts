@@ -387,6 +387,7 @@ subProduct : subproduct?._id
       ...inventory.toObject(),
       pcost: subproduct.sellingprice,
       sp: subproduct.mrp,
+      name:subproduct.name
     };
 
     let enc = encryptText(inventory._id.toString());

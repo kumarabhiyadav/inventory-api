@@ -340,7 +340,7 @@ exports.createQRCode = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void
             newQuantity: subproduct.quantity,
             transactionType: "PURCHASE",
         });
-        let result = Object.assign(Object.assign({}, inventory.toObject()), { pcost: subproduct.sellingprice, sp: subproduct.mrp });
+        let result = Object.assign(Object.assign({}, inventory.toObject()), { pcost: subproduct.sellingprice, sp: subproduct.mrp, name: subproduct.name });
         let enc = (0, ENC_1.encryptText)(inventory._id.toString());
         let sub = yield purchase_subproduct_model_1.PurchaseSubProductModel.findByIdAndUpdate(subproduct._id, { inInventory: true });
         return res.status(200).json({
