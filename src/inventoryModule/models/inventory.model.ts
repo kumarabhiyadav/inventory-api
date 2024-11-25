@@ -2,8 +2,8 @@ import { getModelForClass, prop, Ref } from "@typegoose/typegoose";
 import { PurchaseSubProduct } from "./purchase.subproduct.model";
 
 export class Inventory {
-  @prop({ required: true })
-  subProduct: Ref<PurchaseSubProduct>;
+  @prop({ required: true, ref: () => PurchaseSubProduct })
+  subProduct!: Ref<PurchaseSubProduct>;
 
   @prop({ required: true })
   sku: string;

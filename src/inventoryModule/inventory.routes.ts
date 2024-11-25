@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { createCategory,createProduct,createPurchase,createQRCode,createSubproduct, deleteCategory, deleteProduct, deletePurchase, deleteSubproduct, fetchCategories, fetchProducts, fetchPurchase, fetchSubProductPurchase, fetchSubProducts,searchSubProducts, sellProductQR } from "./inventory.controller";
+import { createCategory,createProduct,createPurchase,createQRCode,createReport,createSubproduct, deleteCategory, deleteProduct, deletePurchase, deleteSubproduct, fetchCategories, fetchProducts, fetchPurchase, fetchSubProductPurchase, fetchSubProducts,getProductByQR,getReports,searchSubProducts, sellProductQR } from "./inventory.controller";
 export const InventoryRoutes: Router = express.Router();
 
 InventoryRoutes.post("/createCategory", createCategory);
@@ -24,9 +24,16 @@ InventoryRoutes.get("/fetchSubProductPurchase/:id", fetchSubProductPurchase);
 
 // InventoryQR
 
+InventoryRoutes.get("/getProductByQR/:code/:pass", getProductByQR);
+
+
 InventoryRoutes.get("/sellProductQR/:code/:pass/:qyt/:cost/:note", sellProductQR);
 
 InventoryRoutes.post("/createQRCode", createQRCode);
+
+
+InventoryRoutes.get("/createReport", createReport);
+InventoryRoutes.get("/getReport", getReports);
 
 
 

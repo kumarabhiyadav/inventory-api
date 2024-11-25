@@ -1,5 +1,10 @@
 import { Request, Response } from "express";
-import { Types } from "mongoose";
+import XLSX from "xlsx";
+
+import fs from "fs";
+
+import { DocumentType } from "@typegoose/typegoose";
+
 import { tryCatchFn } from "../utils/Helpers/tryCatchFn";
 import { CategoryModel } from "./models/category.model";
 import { ProductModel } from "./models/product.model";
@@ -12,9 +17,10 @@ import {
 import { PurchaseModel } from "./models/purchase.model";
 import { InventoryModel } from "./models/inventory.model";
 import { SupplierModel } from "../supplierModule/supplier.model";
-import { log } from "console";
 import { decryptText, encryptText } from "../utils/Helpers/ENC";
-import { InventoryLogModel } from "./models/inventorylog.model";
+import { InventoryLog, InventoryLogModel } from "./models/inventorylog.model";
+import path from "path";
+import { ReportsModel } from "./models/reports.model";
 
 export const createCategory = tryCatchFn(
   async (req: Request, res: Response) => {
@@ -286,7 +292,59 @@ export const deleteSubproduct = tryCatchFn(
   }
 );
 
-// New
+// New APIS
+export const getProductByQR = tryCatchFn(
+  async (req: Request, res: Response) => {
+    let code = req.params.code;
+    let pass = req.params.pass;
+
+    let data = decryptText({ cipherText: code, iv: pass });
+    console.log(data);
+
+    let inventory = await InventoryModel.findById(data);
+
+    if (!inventory) {
+      return res.status(200).json({
+        success: false,
+        result: null,
+      });
+    }
+
+    const result = await InventoryLogModel.aggregate([
+      {
+        $match: {
+          inventory: inventory?._id, // Filter based on the value of `inventory`
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalQyt: { $sum: "$qyt" },
+        },
+      },
+    ]);
+
+    let inStock =
+      result[0]?.["totalQyt"] !== undefined
+        ? inventory.newQuantity - result[0]["totalQyt"]
+        : inventory.newQuantity;
+    let subproduct = await PurchaseSubProductModel.findById(
+      inventory?.subProduct
+    );
+
+    let inventoryLogs = await InventoryLogModel.find({
+      inventory: inventory._id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      result: subproduct,
+      inStock: inStock,
+      log: inventoryLogs,
+      message: "Detail ",
+    });
+  }
+);
 
 export const sellProductQR = tryCatchFn(async (req: Request, res: Response) => {
   let code = req.params.code;
@@ -294,7 +352,6 @@ export const sellProductQR = tryCatchFn(async (req: Request, res: Response) => {
   let qyt = req.params.qyt;
   let cost = req.params.cost;
   let note = req.params.note;
-
 
   if (!code && !pass && !qyt && !cost) {
     return res.status(200).json({
@@ -312,38 +369,41 @@ export const sellProductQR = tryCatchFn(async (req: Request, res: Response) => {
       success: false,
       message: "Product Not Found",
     });
-  } 
+  }
 
   const result = await InventoryLogModel.aggregate([
     {
       $match: {
-        inventory: inventory._id // Filter based on the value of `inventory`
-      }
-    },{
-      $group : {
-        _id : null,
-        totalQyt: {$sum:"$qyt"}
-      }
-    }
+        inventory: inventory._id, // Filter based on the value of `inventory`
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalQyt: { $sum: "$qyt" },
+      },
+    },
   ]);
 
-
-  if  ((!(inventory.newQuantity >= (result[0]?.totalQyt ?? 0) + parseInt(qyt))) ){
+  if (!(inventory.newQuantity >= (result[0]?.totalQyt ?? 0) + parseInt(qyt))) {
     return res.status(200).json({
       success: false,
-      message: `${inventory.newQuantity - result[0]['totalQyt']} In Stock`,
+      message: `${inventory.newQuantity - result[0]["totalQyt"]} In Stock`,
     });
   }
 
-   
-  let total = parseInt(qyt)*parseFloat(cost);
+  let total = parseInt(qyt) * parseFloat(cost);
   let inventoryLog = await InventoryLogModel.create({
-    inventory:inventory._id,
-    cost:total,
+    inventory: inventory._id,
+    cost: total,
     qyt,
-    note
-  })
-
+    note,
+  });
+  console.log({
+    success: true,
+    result: inventoryLog,
+    message: "Logged Inventory OUT",
+  });
   return res.status(200).json({
     success: true,
     result: inventoryLog,
@@ -359,19 +419,16 @@ export const createQRCode = tryCatchFn(async (req: Request, res: Response) => {
   let supplier = await SupplierModel.findById(supplierId);
   // Check Inventory Already Exists Or Not
 
-  let inventoryCheck  =  await InventoryModel.findOne({
-subProduct : subproduct?._id
-  })
+  let inventoryCheck = await InventoryModel.findOne({
+    subProduct: subproduct?._id,
+  });
 
-  if (inventoryCheck){
-
+  if (inventoryCheck) {
     return res.status(200).json({
       success: false,
       message: "Already Exists in Inventory",
     });
-
   }
-
 
   if (subproduct && supplier) {
     let sku = getSKU(supplier.name, subproduct.cost);
@@ -387,12 +444,14 @@ subProduct : subproduct?._id
       ...inventory.toObject(),
       pcost: subproduct.sellingprice,
       sp: subproduct.mrp,
-      name:subproduct.name
+      name: subproduct.name,
     };
 
     let enc = encryptText(inventory._id.toString());
 
-    let sub = await  PurchaseSubProductModel.findByIdAndUpdate(subproduct._id,{inInventory:true});
+    let sub = await PurchaseSubProductModel.findByIdAndUpdate(subproduct._id, {
+      inInventory: true,
+    });
 
     return res.status(200).json({
       success: true,
@@ -433,3 +492,88 @@ function numberToStringFormat(num: number) {
 
   return result;
 }
+
+export const createReport = tryCatchFn(async (req: Request, res: Response) => {
+  let data = [];
+
+  let fileName = `Report-${new Date()}.xlsx`;
+  let report = await ReportsModel.create({
+    name: fileName,
+    status: "Pending",
+  });
+
+  res.status(200).json({
+    success: true,
+    result: report,
+    message: "Report is creating wait for some time",
+  });
+
+  const inventory = await InventoryModel.find().populate({
+    path: "subProduct",
+    select: "name",
+  });
+  for (const inv of inventory) {
+    // Use a type assertion to inform TypeScript that subProduct is populated
+    if (inv.subProduct && typeof inv.subProduct !== "string") {
+      const subProduct = inv.subProduct as PurchaseSubProduct; // Assert the populated type
+
+      const Logs: DocumentType<InventoryLog>[] = await InventoryLogModel.find({
+        inventory: inv._id,
+      });
+
+      let inStock = inv.newQuantity;
+
+      for (const lo of Logs) {
+        inStock -= lo.qyt;
+        const obj = {
+          Name: subProduct.name,
+          Quantity: lo.qyt,
+          Cost: lo.cost,
+          Total: lo.qyt * lo.cost,
+          Stock: inStock,
+          Date: lo.createdAt,
+        };
+
+        data.push(obj);
+        console.log(obj);
+      }
+    }
+  }
+
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(data); // Convert JSON data to sheet
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+
+  // 2. Write the workbook to a temporary file
+  const filePath = path.join(__dirname, fileName);
+  XLSX.writeFile(workbook, filePath);
+
+  const fileContent = fs.readFileSync(filePath);
+
+  let result: any = await uploadToS3Bucket("reports", fileName, fileContent);
+
+
+  console.warn(result);
+
+  let reportUpdate = await ReportsModel.findByIdAndUpdate(report._id, {
+    url: result.Location,
+    status: "Completed"
+  });
+
+  fs.unlinkSync(filePath);
+});
+
+
+
+export const getReports = tryCatchFn(
+  async (req: Request, res: Response) => {
+    let id = req.params.id;
+    let reports = await ReportsModel.find({}, {}, { sort: { createdAt: -1 } });
+
+    return res.status(200).json({
+      success: true,
+      result: reports,
+      message: "Reports",
+    });
+  }
+);

@@ -9,31 +9,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InventoryLogModel = exports.InventoryLog = void 0;
+exports.ReportsModel = exports.Reports = void 0;
 const typegoose_1 = require("@typegoose/typegoose");
-class InventoryLog {
+class Reports {
 }
 __decorate([
-    (0, typegoose_1.prop)({ required: true }),
-    __metadata("design:type", Object)
-], InventoryLog.prototype, "inventory", void 0);
-__decorate([
-    (0, typegoose_1.prop)({ required: true }),
-    __metadata("design:type", Number)
-], InventoryLog.prototype, "cost", void 0);
-__decorate([
-    (0, typegoose_1.prop)({ required: true }),
-    __metadata("design:type", Number)
-], InventoryLog.prototype, "qyt", void 0);
-__decorate([
-    (0, typegoose_1.prop)(),
+    (0, typegoose_1.prop)({ trim: true, required: true }),
     __metadata("design:type", String)
-], InventoryLog.prototype, "notes", void 0);
+], Reports.prototype, "name", void 0);
 __decorate([
-    (0, typegoose_1.prop)(),
-    __metadata("design:type", Date)
-], InventoryLog.prototype, "createdAt", void 0);
-exports.InventoryLog = InventoryLog;
-exports.InventoryLogModel = (0, typegoose_1.getModelForClass)(InventoryLog, {
+    (0, typegoose_1.prop)({ trim: true }),
+    __metadata("design:type", String)
+], Reports.prototype, "url", void 0);
+__decorate([
+    (0, typegoose_1.prop)({ trim: true }),
+    __metadata("design:type", String)
+], Reports.prototype, "status", void 0);
+exports.Reports = Reports;
+exports.ReportsModel = (0, typegoose_1.getModelForClass)(Reports, {
     schemaOptions: { timestamps: true },
 });

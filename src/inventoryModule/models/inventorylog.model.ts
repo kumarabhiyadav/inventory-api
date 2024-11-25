@@ -14,6 +14,9 @@ export class InventoryLog {
   
   @prop()
   notes: string;
+
+  @prop()
+  createdAt!:Date
 }
 
 export const InventoryLogModel = getModelForClass(InventoryLog, {

@@ -11,10 +11,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InventoryModel = exports.Inventory = void 0;
 const typegoose_1 = require("@typegoose/typegoose");
+const purchase_subproduct_model_1 = require("./purchase.subproduct.model");
 class Inventory {
 }
 __decorate([
-    (0, typegoose_1.prop)({ required: true }),
+    (0, typegoose_1.prop)({ required: true, ref: () => purchase_subproduct_model_1.PurchaseSubProduct }),
     __metadata("design:type", Object)
 ], Inventory.prototype, "subProduct", void 0);
 __decorate([
