@@ -19,7 +19,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReports = exports.createReport = exports.createQRCode = exports.sellProductQR = exports.getProductByQR = exports.deleteSubproduct = exports.deleteProduct = exports.deleteCategory = exports.fetchSubProductPurchase = exports.deletePurchase = exports.fetchPurchase = exports.createPurchase = exports.searchSubProducts = exports.fetchSubProducts = exports.fetchProducts = exports.fetchCategories = exports.createSubproduct = exports.createProduct = exports.createCategory = void 0;
+exports.getInventoryDetails = exports.getReports = exports.createReport = exports.createQRCode = exports.sellProductQR = exports.getProductByQR = exports.deleteSubproduct = exports.deleteProduct = exports.deleteCategory = exports.fetchSubProductPurchase = exports.deletePurchase = exports.fetchPurchase = exports.createPurchase = exports.searchSubProducts = exports.fetchSubProducts = exports.fetchProducts = exports.fetchCategories = exports.createSubproduct = exports.createProduct = exports.createCategory = void 0;
 const xlsx_1 = __importDefault(require("xlsx"));
 const fs_1 = __importDefault(require("fs"));
 const tryCatchFn_1 = require("../utils/Helpers/tryCatchFn");
@@ -478,7 +478,7 @@ exports.createReport = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void
     console.warn(result);
     let reportUpdate = yield reports_model_1.ReportsModel.findByIdAndUpdate(report._id, {
         url: result.Location,
-        status: "Completed"
+        status: "Completed",
     });
     fs_1.default.unlinkSync(filePath);
 }));
@@ -489,5 +489,47 @@ exports.getReports = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0
         success: true,
         result: reports,
         message: "Reports",
+    });
+}));
+exports.getInventoryDetails = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let logs = yield inventorylog_model_1.InventoryLogModel.aggregate([
+        {
+            $lookup: {
+                from: "inventories",
+                localField: "inventory",
+                foreignField: "_id",
+                as: "inventoryDetails",
+            },
+        },
+        {
+            $unwind: "$inventoryDetails",
+        },
+        {
+            $lookup: {
+                from: "purchasesubproducts",
+                localField: "inventoryDetails.subProduct",
+                foreignField: "_id",
+                as: "subProductDetails",
+            },
+        },
+        {
+            $unwind: "$subProductDetails",
+        },
+        {
+            $group: {
+                _id: "$inventory",
+                qyt: { $sum: "$qyt" },
+                totalqyt: { $first: "$inventoryDetails.newQuantity" },
+                name: { $first: "$subProductDetails.name" },
+            },
+        },
+        {
+            $sort: { createdAt: -1 },
+        },
+    ]);
+    return res.status(200).json({
+        success: true,
+        result: logs,
+        message: "Logs",
     });
 }));

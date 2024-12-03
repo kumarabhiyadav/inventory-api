@@ -26,3 +26,4 @@ exports.InventoryRoutes.get("/sellProductQR/:code/:pass/:qyt/:cost/:note", inven
 exports.InventoryRoutes.post("/createQRCode", inventory_controller_1.createQRCode);
 exports.InventoryRoutes.get("/createReport", inventory_controller_1.createReport);
 exports.InventoryRoutes.get("/getReport", inventory_controller_1.getReports);
+exports.InventoryRoutes.get("/getInventoryDetails", inventory_controller_1.getInventoryDetails);

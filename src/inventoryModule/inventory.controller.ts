@@ -552,28 +552,74 @@ export const createReport = tryCatchFn(async (req: Request, res: Response) => {
 
   let result: any = await uploadToS3Bucket("reports", fileName, fileContent);
 
-
   console.warn(result);
 
   let reportUpdate = await ReportsModel.findByIdAndUpdate(report._id, {
     url: result.Location,
-    status: "Completed"
+    status: "Completed",
   });
 
   fs.unlinkSync(filePath);
 });
 
+export const getReports = tryCatchFn(async (req: Request, res: Response) => {
+  let id = req.params.id;
+  let reports = await ReportsModel.find({}, {}, { sort: { createdAt: -1 } });
 
+  return res.status(200).json({
+    success: true,
+    result: reports,
+    message: "Reports",
+  });
+});
 
-export const getReports = tryCatchFn(
+export const getInventoryDetails = tryCatchFn(
   async (req: Request, res: Response) => {
-    let id = req.params.id;
-    let reports = await ReportsModel.find({}, {}, { sort: { createdAt: -1 } });
+    let logs = await InventoryLogModel.aggregate([
+      // Lookup to join inventoryLogs with Inventories
+      {
+        $lookup: {
+          from: "inventories", // The related collection
+          localField: "inventory", // Field in inventoryLogs
+          foreignField: "_id", // Field in Inventories
+          as: "inventoryDetails", // Output array
+        },
+      },
+
+      {
+        $unwind: "$inventoryDetails",
+      },
+      // Lookup to join Inventories with SubProducts
+      {
+        $lookup: {
+          from: "purchasesubproducts", // The related collection
+          localField: "inventoryDetails.subProduct", // Field in inventoryDetails
+          foreignField: "_id", // Field in SubProducts
+          as: "subProductDetails", // Output array
+        },
+      },
+      // Unwind the joined subProductDetails array
+      {
+        $unwind: "$subProductDetails",
+      },
+      // Group by inventory ID
+      {
+        $group: {
+          _id: "$inventory", // Group by inventory ID
+          qyt: { $sum: "$qyt" }, // Sum of qyt
+          totalqyt: { $first: "$inventoryDetails.newQuantity" }, // Take newQuantity
+          name: { $first: "$subProductDetails.name" }, // Take name from SubProducts
+        },
+      },
+      {
+        $sort: { createdAt: -1 }, // Use -1 for descending order
+      },
+    ]);
 
     return res.status(200).json({
       success: true,
-      result: reports,
-      message: "Reports",
+      result: logs,
+      message: "Logs",
     });
   }
 );
