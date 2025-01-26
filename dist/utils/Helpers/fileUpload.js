@@ -12,8 +12,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteFromS3Bucket = exports.uploadToS3Bucket = exports.configS3 = void 0;
+exports.uploadToCloudinary = exports.deleteFromS3Bucket = exports.uploadToS3Bucket = exports.configS3 = void 0;
+const cloudinary_1 = require("cloudinary");
+const dotenv_1 = __importDefault(require("dotenv"));
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
+dotenv_1.default.config();
+cloudinary_1.v2.config({
+    cloud_name: process.env.CLOUDNAME,
+    api_key: process.env.CLOUDAPIKEY,
+    api_secret: process.env.CLOUDSECRETKEY,
+});
 let S3 = null;
 function configS3() {
     S3 = new aws_sdk_1.default.S3({
@@ -58,3 +66,44 @@ const deleteFromS3Bucket = (fileId) => __awaiter(void 0, void 0, void 0, functio
     });
 });
 exports.deleteFromS3Bucket = deleteFromS3Bucket;
+cloudinary_1.v2.config({
+    cloud_name: process.env.CLOUDNAME,
+    api_key: process.env.CLOUDAPIKEY,
+    api_secret: process.env.CLOUDSECRETKEY
+});
+function uploadToCloudinary(folderName, fileName, file) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!file) {
+            return {
+                success: false,
+                message: 'Invalid file',
+                error: 'File is missing'
+            };
+        }
+        try {
+            const fileData = file.data instanceof Buffer
+                ? `data:${file.mimetype};base64,${file.data.toString('base64')}`
+                : file.data;
+            const uploadResponse = yield cloudinary_1.v2.uploader.upload(fileData, {
+                folder: folderName,
+                public_id: fileName,
+                resource_type: 'auto'
+            });
+            return {
+                success: true,
+                message: 'File uploaded successfully',
+                url: uploadResponse.secure_url,
+                publicId: uploadResponse.public_id
+            };
+        }
+        catch (error) {
+            console.error('Cloudinary upload error:', error);
+            return {
+                success: false,
+                message: 'File upload failed',
+                error: error.message
+            };
+        }
+    });
+}
+exports.uploadToCloudinary = uploadToCloudinary;

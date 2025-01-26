@@ -126,8 +126,11 @@ exports.createPurchase = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(vo
             try {
                 const sub = _c;
                 if (sub.image && req.files && req.files[sub.subproduct]) {
-                    let response = yield (0, fileUpload_1.uploadToS3Bucket)("purchaseFolder", req.files[sub.subproduct].name, req.files[sub.subproduct].data);
-                    sub.image = response.Location;
+                    let response = yield (0, fileUpload_1.uploadToCloudinary)("purchaseFolder", req.files[sub.subproduct].name, req.files[sub.subproduct]);
+                    if (response.success) {
+                        sub.image = response.url;
+                    }
+                    console.log(response);
                 }
                 let subData = yield purchase_subproduct_model_1.PurchaseSubProductModel.create({
                     name: sub.name,

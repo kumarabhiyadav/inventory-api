@@ -9,7 +9,7 @@ import { tryCatchFn } from "../utils/Helpers/tryCatchFn";
 import { CategoryModel } from "./models/category.model";
 import { ProductModel } from "./models/product.model";
 import { SubProductModel } from "./models/subproduct.model";
-import { uploadToS3Bucket } from "../utils/Helpers/fileUpload";
+import { uploadToCloudinary, uploadToS3Bucket } from "../utils/Helpers/fileUpload";
 import {
   PurchaseSubProduct,
   PurchaseSubProductModel,
@@ -127,12 +127,16 @@ export const createPurchase = tryCatchFn(
     let subproducts = [];
     for await (const sub of body.subProducts) {
       if (sub.image && req.files && req.files[sub.subproduct]) {
-        let response: any = await uploadToS3Bucket(
+        let response: any = await uploadToCloudinary(
           "purchaseFolder",
           (req.files[sub.subproduct] as any).name,
-          (req.files[sub.subproduct] as any).data
+          (req.files[sub.subproduct] as any)
         );
-        sub.image = response.Location;
+        if(response.success){
+          sub.image = response.url;
+        }
+
+        console.log(response)
       }
 
       let subData = await PurchaseSubProductModel.create({
