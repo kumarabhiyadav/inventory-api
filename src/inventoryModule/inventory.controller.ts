@@ -575,41 +575,42 @@ export const getInventoryDetails = tryCatchFn(
     let logs = await InventoryLogModel.aggregate([
       // Lookup to join inventoryLogs with Inventories
       {
-        $lookup: {
-          from: "inventories", // The related collection
-          localField: "inventory", // Field in inventoryLogs
-          foreignField: "_id", // Field in Inventories
-          as: "inventoryDetails", // Output array
-        },
+      $lookup: {
+        from: "inventories", // The related collection
+        localField: "inventory", // Field in inventoryLogs
+        foreignField: "_id", // Field in Inventories
+        as: "inventoryDetails", // Output array
+      },
       },
 
       {
-        $unwind: "$inventoryDetails",
+      $unwind: "$inventoryDetails",
       },
       // Lookup to join Inventories with SubProducts
       {
-        $lookup: {
-          from: "purchasesubproducts", // The related collection
-          localField: "inventoryDetails.subProduct", // Field in inventoryDetails
-          foreignField: "_id", // Field in SubProducts
-          as: "subProductDetails", // Output array
-        },
+      $lookup: {
+        from: "purchasesubproducts", // The related collection
+        localField: "inventoryDetails.subProduct", // Field in inventoryDetails
+        foreignField: "_id", // Field in SubProducts
+        as: "subProductDetails", // Output array
+      },
       },
       // Unwind the joined subProductDetails array
       {
-        $unwind: "$subProductDetails",
+      $unwind: "$subProductDetails",
       },
       // Group by inventory ID
       {
-        $group: {
-          _id: "$inventory", // Group by inventory ID
-          qyt: { $sum: "$qyt" }, // Sum of qyt
-          totalqyt: { $first: "$inventoryDetails.newQuantity" }, // Take newQuantity
-          name: { $first: "$subProductDetails.name" }, // Take name from SubProducts
-        },
+      $group: {
+        _id: "$inventory", // Group by inventory ID
+        qyt: { $sum: "$qyt" }, // Sum of qyt
+        totalqyt: { $first: "$inventoryDetails.newQuantity" }, // Take newQuantity
+        name: { $first: "$subProductDetails.name" }, // Take name from SubProducts
+        createdAt: { $first: "$createdAt" }, // Take createdAt from InventoryLogModel
+      },
       },
       {
-        $sort: { createdAt: -1 }, // Use -1 for descending order
+      $sort: { createdAt: -1 }, // Use -1 for descending order
       },
     ]);
 

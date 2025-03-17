@@ -517,6 +517,7 @@ exports.getInventoryDetails = (0, tryCatchFn_1.tryCatchFn)((req, res) => __await
                 qyt: { $sum: "$qyt" },
                 totalqyt: { $first: "$inventoryDetails.newQuantity" },
                 name: { $first: "$subProductDetails.name" },
+                createdAt: { $first: "$createdAt" },
             },
         },
         {
