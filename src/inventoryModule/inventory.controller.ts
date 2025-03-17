@@ -347,22 +347,20 @@ export const getProductByQR = tryCatchFn(
 );
 
 export const sellProductQR = tryCatchFn(async (req: Request, res: Response) => {
-  let code = req.params.code;
-  let pass = req.params.pass;
+  let id = req.params.id;
   let qyt = req.params.qyt;
   let cost = req.params.cost;
   let note = req.params.note;
 
-  if (!code && !pass && !qyt && !cost) {
+  if (!id && !qyt && !cost) {
     return res.status(200).json({
       success: false,
       message: "Invalide code",
     });
   }
 
-  let data = decryptText({ cipherText: code, iv: pass });
-  console.log(data);
-  let inventory = await InventoryModel.findById(data);
+  console.log(id);
+  let inventory = await InventoryModel.findById(id);
 
   if (!inventory) {
     return res.status(200).json({

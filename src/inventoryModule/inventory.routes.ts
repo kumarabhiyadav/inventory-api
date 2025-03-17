@@ -27,7 +27,7 @@ InventoryRoutes.get("/fetchSubProductPurchase/:id", fetchSubProductPurchase);
 InventoryRoutes.get("/getProductByQR/:id", getProductByQR);
 
 
-InventoryRoutes.get("/sellProductQR/:code/:pass/:qyt/:cost/:note", sellProductQR);
+InventoryRoutes.get("/sellProductQR/:id/:qyt/:cost/:note", sellProductQR);
 
 InventoryRoutes.post("/createQRCode", createQRCode);
 

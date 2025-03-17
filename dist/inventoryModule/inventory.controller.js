@@ -31,7 +31,6 @@ const purchase_subproduct_model_1 = require("./models/purchase.subproduct.model"
 const purchase_model_1 = require("./models/purchase.model");
 const inventory_model_1 = require("./models/inventory.model");
 const supplier_model_1 = require("../supplierModule/supplier.model");
-const ENC_1 = require("../utils/Helpers/ENC");
 const inventorylog_model_1 = require("./models/inventorylog.model");
 const path_1 = __importDefault(require("path"));
 const reports_model_1 = require("./models/reports.model");
@@ -315,20 +314,18 @@ exports.getProductByQR = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(vo
 }));
 exports.sellProductQR = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _h, _j;
-    let code = req.params.code;
-    let pass = req.params.pass;
+    let id = req.params.id;
     let qyt = req.params.qyt;
     let cost = req.params.cost;
     let note = req.params.note;
-    if (!code && !pass && !qyt && !cost) {
+    if (!id && !qyt && !cost) {
         return res.status(200).json({
             success: false,
             message: "Invalide code",
         });
     }
-    let data = (0, ENC_1.decryptText)({ cipherText: code, iv: pass });
-    console.log(data);
-    let inventory = yield inventory_model_1.InventoryModel.findById(data);
+    console.log(id);
+    let inventory = yield inventory_model_1.InventoryModel.findById(id);
     if (!inventory) {
         return res.status(200).json({
             success: false,

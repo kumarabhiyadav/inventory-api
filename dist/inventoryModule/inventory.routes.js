@@ -22,7 +22,7 @@ exports.InventoryRoutes.get("/deleteSubproduct", inventory_controller_1.deleteSu
 exports.InventoryRoutes.delete("/deletePurchase/:id", inventory_controller_1.deletePurchase);
 exports.InventoryRoutes.get("/fetchSubProductPurchase/:id", inventory_controller_1.fetchSubProductPurchase);
 exports.InventoryRoutes.get("/getProductByQR/:id", inventory_controller_1.getProductByQR);
-exports.InventoryRoutes.get("/sellProductQR/:code/:pass/:qyt/:cost/:note", inventory_controller_1.sellProductQR);
+exports.InventoryRoutes.get("/sellProductQR/:id/:qyt/:cost/:note", inventory_controller_1.sellProductQR);
 exports.InventoryRoutes.post("/createQRCode", inventory_controller_1.createQRCode);
 exports.InventoryRoutes.get("/createReport", inventory_controller_1.createReport);
 exports.InventoryRoutes.get("/getReport", inventory_controller_1.getReports);
