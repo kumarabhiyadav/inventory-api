@@ -277,11 +277,8 @@ exports.deleteSubproduct = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(
 }));
 exports.getProductByQR = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _g;
-    let code = req.params.code;
-    let pass = req.params.pass;
-    let data = (0, ENC_1.decryptText)({ cipherText: code, iv: pass });
-    console.log(data);
-    let inventory = yield inventory_model_1.InventoryModel.findById(data);
+    let id = req.params.id;
+    let inventory = yield inventory_model_1.InventoryModel.findById(id);
     if (!inventory) {
         return res.status(200).json({
             success: false,
@@ -398,15 +395,14 @@ exports.createQRCode = (0, tryCatchFn_1.tryCatchFn)((req, res) => __awaiter(void
             transactionType: "PURCHASE",
         });
         let result = Object.assign(Object.assign({}, inventory.toObject()), { pcost: subproduct.sellingprice, sp: subproduct.mrp, name: subproduct.name });
-        let enc = (0, ENC_1.encryptText)(inventory._id.toString());
-        let sub = yield purchase_subproduct_model_1.PurchaseSubProductModel.findByIdAndUpdate(subproduct._id, {
+        yield purchase_subproduct_model_1.PurchaseSubProductModel.findByIdAndUpdate(subproduct._id, {
             inInventory: true,
         });
         return res.status(200).json({
             success: true,
             result: result,
             message: "Moved TO INVENTORY",
-            qr: `${enc["cipherText"]}:${enc["iv"]}`,
+            qr: inventory._id.toString(),
         });
     }
     else {

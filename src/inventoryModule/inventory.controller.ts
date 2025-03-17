@@ -299,13 +299,9 @@ export const deleteSubproduct = tryCatchFn(
 // New APIS
 export const getProductByQR = tryCatchFn(
   async (req: Request, res: Response) => {
-    let code = req.params.code;
-    let pass = req.params.pass;
+    let id = req.params.id;
 
-    let data = decryptText({ cipherText: code, iv: pass });
-    console.log(data);
-
-    let inventory = await InventoryModel.findById(data);
+    let inventory = await InventoryModel.findById(id);
 
     if (!inventory) {
       return res.status(200).json({
@@ -451,9 +447,8 @@ export const createQRCode = tryCatchFn(async (req: Request, res: Response) => {
       name: subproduct.name,
     };
 
-    let enc = encryptText(inventory._id.toString());
 
-    let sub = await PurchaseSubProductModel.findByIdAndUpdate(subproduct._id, {
+    await PurchaseSubProductModel.findByIdAndUpdate(subproduct._id, {
       inInventory: true,
     });
 
@@ -461,7 +456,7 @@ export const createQRCode = tryCatchFn(async (req: Request, res: Response) => {
       success: true,
       result: result,
       message: "Moved TO INVENTORY",
-      qr: `${enc["cipherText"]}:${enc["iv"]}`,
+      qr: inventory._id.toString(),
     });
   } else {
     return res.status(500).json({
